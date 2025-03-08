@@ -23,6 +23,8 @@
 #include <string>
 #include <utility>
 
+#include "isaac_ros_common/qos.hpp"
+
 #include "isaac_ros_nitros_image_type/nitros_image.hpp"
 #include "isaac_ros_nitros_compressed_image_type/nitros_compressed_image.hpp"
 
@@ -98,6 +100,21 @@ DecoderNode::DecoderNode(const rclcpp::NodeOptions & options)
     PACKAGE_NAME)
 {
   RCLCPP_DEBUG(get_logger(), "[DecoderNode] Constructor");
+
+  // This function sets the QoS parameter for publishers and subscribers setup by this NITROS node
+  rclcpp::QoS input_qos_ = ::isaac_ros::common::AddQosParameter(
+    *this, "DEFAULT", "input_qos");
+  rclcpp::QoS output_qos_ = ::isaac_ros::common::AddQosParameter(
+    *this, "DEFAULT", "output_qos");
+
+  for (auto & config : config_map_) {
+    if (config.second.topic_name == INPUT_TOPIC_NAME)
+    {
+      config.second.qos = input_qos_;
+    } else {
+      config.second.qos = output_qos_;
+    }
+  }
 
   registerSupportedType<nvidia::isaac_ros::nitros::NitrosImage>();
   registerSupportedType<nvidia::isaac_ros::nitros::NitrosCompressedImage>();
